@@ -22,6 +22,7 @@ namespace IAMUAYTHAI.Infra
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(Context).Assembly);
             base.OnModelCreating(modelBuilder);
         }
     }
