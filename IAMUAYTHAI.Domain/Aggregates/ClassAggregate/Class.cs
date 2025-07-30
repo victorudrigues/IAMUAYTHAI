@@ -3,9 +3,8 @@ using IAMUAYTHAI.Domain.Aggregates.TeacherAggregate;
 
 namespace IAMUAYTHAI.Domain.Aggregates.ClassAggregate
 {
-    public class Class
+    public class Class : Entity
     {
-        public int Id { get; set; }
         public DateTime DateTime { get; set; }
         public string Description { get; set; } = string.Empty;
         public List<Student> PresentStudents { get; set; } = new();

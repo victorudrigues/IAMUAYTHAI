@@ -8,8 +8,16 @@
 
   <ItemGroup>
     <Folder Include="Configurations\" />
-    <Folder Include="Features\" />
     <Folder Include="Migrations\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\IAMUAYTHAI.Application.Abstractions\IAMUAYTHAI.Application.Abstractions.csproj" />
+    <ProjectReference Include="..\IAMUAYTHAI.Domain\IAMUAYTHAI.Domain.csproj" />
   </ItemGroup>
 
 </Project>

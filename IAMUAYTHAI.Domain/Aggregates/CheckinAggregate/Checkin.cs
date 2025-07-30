@@ -1,8 +1,7 @@
 namespace IAMUAYTHAI.Domain.Aggregates.CheckinAggregate
 {
-    public class Checkin
+    public class Checkin : Entity
     {
-        public int Id { get; set; }
         public int StudentId { get; set; }
         public DateTime DateTime { get; set; }
     }

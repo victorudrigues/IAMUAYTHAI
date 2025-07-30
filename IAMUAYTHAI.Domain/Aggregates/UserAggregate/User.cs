@@ -1,14 +1,9 @@
+using IAMUAYTHAI.Domain.Enumerations;
+
 namespace IAMUAYTHAI.Domain.Aggregates.UserAggregate
 {
-    public enum UserProfile
+    public class User : Entity
     {
-        Student = 1,
-        Teacher = 2
-    }
-
-    public class User
-    {
-        public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;

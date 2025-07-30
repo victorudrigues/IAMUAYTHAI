@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("IAMUAYTHAI.Infra")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c54c9d7ea0f3db464ad48aefd710b6a9095d4017")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fbf210d21da9def788e1ea8c138ee6e46af530a6")]
 [assembly: System.Reflection.AssemblyProductAttribute("IAMUAYTHAI.Infra")]
 [assembly: System.Reflection.AssemblyTitleAttribute("IAMUAYTHAI.Infra")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
