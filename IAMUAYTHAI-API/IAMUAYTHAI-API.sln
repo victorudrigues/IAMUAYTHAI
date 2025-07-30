@@ -12,6 +12,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IAMUAYTHAI.Application", "..\IAMUAYTHAI.Application\IAMUAYTHAI.Application.csproj", "{74C2C35B-E61F-4ED5-8C1C-8E526FFE0B9E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IAMUAYTHAI.Application.Abstractions", "..\IAMUAYTHAI.Application.Abstractions\IAMUAYTHAI.Application.Abstractions.csproj", "{F7D0DC1A-84BD-4894-98EE-4D8720B7ED2C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F80C4070-40A2-4B0A-BAF2-029E69A07EBE} = {F80C4070-40A2-4B0A-BAF2-029E69A07EBE}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IAMUAYTHAI.Domain", "..\IAMUAYTHAI.Domain\IAMUAYTHAI.Domain.csproj", "{F80C4070-40A2-4B0A-BAF2-029E69A07EBE}"
 EndProject

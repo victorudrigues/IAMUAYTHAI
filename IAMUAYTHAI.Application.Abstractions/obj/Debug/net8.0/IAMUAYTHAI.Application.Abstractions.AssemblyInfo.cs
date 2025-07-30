@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("IAMUAYTHAI.Application.Abstractions")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fbf210d21da9def788e1ea8c138ee6e46af530a6")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+460079006290b1e6d9644c21a9f7d739a6da83ba")]
 [assembly: System.Reflection.AssemblyProductAttribute("IAMUAYTHAI.Application.Abstractions")]
 [assembly: System.Reflection.AssemblyTitleAttribute("IAMUAYTHAI.Application.Abstractions")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

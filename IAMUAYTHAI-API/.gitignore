@@ -1,49 +1,64 @@
-# .NET Build artifacts
+# ==========================================
+# Build artifacts
+# ==========================================
 bin/
 obj/
 Debug/
 Release/
+project.lock.json
+project.assets.json
+project.nuget.cache
+*.nuget.props
+*.nuget.targets
+*.csproj.nuget.g.props
+*.csproj.nuget.g.targets
+*.csproj.nuget.dgspec.json
 
-# Visual Studio
+# ==========================================
+# IDE / Editor settings
+# ==========================================
+.vscode/
 .vs/
+.idea/
+*.sln.iml
+*.vsconfig
 *.user
 *.suo
 *.userosscache
 *.sln.docstates
 
-# Test Results
+# ==========================================
+# Test results and coverage
+# ==========================================
 TestResults/
+*.dotCover
 
-# Logs & Temp
+# ==========================================
+# JetBrains Rider / ReSharper / Local History
+# ==========================================
+_ReSharper*/
+*.resharper
+.localhistory/
+
+# ==========================================
+# Cache, temp, logs
+# ==========================================
 *.log
 *.tmp
 *.bak
 *.orig
 *.rej
 *.swp
+*.cache
 
-# JetBrains Rider
-.idea/
-*.sln.iml
-
-# dotCover
-*.dotCover
-
-# Resharper
-_ReSharper*/
-*.resharper
-
-# Local History
-.localhistory/
-
-# NuGet
+# ==========================================
+# NuGet packages
+# ==========================================
 *.nupkg
+*.snupkg
+*.nuspec
 
-# Node.js (if frontend or tools are used)
-node_modules/
-
-# Azure Pipelines
+# ==========================================
+# Azure DevOps / Pipelines
+# ==========================================
 .azure-pipelines/
-
-# VS Config
-.vsconfig

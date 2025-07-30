@@ -32,7 +32,11 @@
         "frameworks": {
           "net8.0": {
             "targetAlias": "net8.0",
-            "projectReferences": {}
+            "projectReferences": {
+              "C:\\IAMUAYTHAI\\IAMUAYTHAI.Domain\\IAMUAYTHAI.Domain.csproj": {
+                "projectPath": "C:\\IAMUAYTHAI\\IAMUAYTHAI.Domain\\IAMUAYTHAI.Domain.csproj"
+              }
+            }
           }
         },
         "warningProperties": {

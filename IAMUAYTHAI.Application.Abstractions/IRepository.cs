@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using IAMUAYTHAI.Domain;
 
 namespace IAMUAYTHAI.Application.Abstractions
 {
-    public interface IRepository<T> where T : class
+    public interface IRepository<T> where T : Entity
     {
         Task<T?> GetByIdAsync(int id);
         Task<IEnumerable<T>> GetAllAsync();
