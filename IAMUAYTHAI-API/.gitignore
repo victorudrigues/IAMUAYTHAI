@@ -1,0 +1,49 @@
+# .NET Build artifacts
+bin/
+obj/
+Debug/
+Release/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Test Results
+TestResults/
+
+# Logs & Temp
+*.log
+*.tmp
+*.bak
+*.orig
+*.rej
+*.swp
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# dotCover
+*.dotCover
+
+# Resharper
+_ReSharper*/
+*.resharper
+
+# Local History
+.localhistory/
+
+# NuGet
+*.nupkg
+
+# Node.js (if frontend or tools are used)
+node_modules/
+
+# Azure Pipelines
+.azure-pipelines/
+
+# VS Config
+.vsconfig
