@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IAMUAYTHAI.Infra.Features
 {
-    public class Repository<T>(Context context, DbSet<T> dbSet) : IRepository<T> where T : Entity
+    public class Repository<T>(Context context) : IRepository<T> where T : Entity
     {
         protected readonly Context _context = context;
-        protected readonly DbSet<T> _dbSet = dbSet;
+        protected readonly DbSet<T> _dbSet = context.Set<T>();
 
         public virtual async Task<T?> GetByIdAsync(int id)
         {
@@ -40,9 +40,9 @@ namespace IAMUAYTHAI.Infra.Features
             _dbSet.RemoveRange(entities);
         }
 
-        //public virtual async Task SaveChangesAsync()
-        //{
-        //    await _context.SaveEntitiesAsync();
-        //}
+        public virtual async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
     }
 }

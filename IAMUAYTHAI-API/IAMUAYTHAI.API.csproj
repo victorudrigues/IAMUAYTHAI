@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\IAMUAYTHAI.Application\IAMUAYTHAI.Application.csproj" />
     <ProjectReference Include="..\IAMUAYTHAI.Infra\IAMUAYTHAI.Infra.csproj" />
   </ItemGroup>
 

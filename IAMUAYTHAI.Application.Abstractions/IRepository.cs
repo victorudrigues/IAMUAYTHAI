@@ -10,5 +10,6 @@ namespace IAMUAYTHAI.Application.Abstractions
         void Update(T entity);
         void Delete(T entity);
         void DeleteRange(IEnumerable<T> entity);
+        Task SaveChangesAsync();
     }
 }

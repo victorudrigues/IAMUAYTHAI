@@ -1,4 +1,5 @@
 using IAMUAYTHAI.Infra;
+using IAMUAYTHAI_API.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +11,7 @@ builder.Services.AddSwaggerGen();
 
 // Registra o migrator no DI
 builder.Services.AddScoped<IContextMigrator, ContextMigrator>();
+builder.Services.AddFeaturesServices();
 
 // Adicione o DbContext antes de builder.Build()
 builder.Services.AddDbContext<Context>(options =>

@@ -26,9 +26,12 @@
     <Folder Include="Features\Teacher\Request\" />
     <Folder Include="Features\Teacher\ViewModel\" />
     <Folder Include="Features\User\Query\" />
-    <Folder Include="Features\User\Request\" />
     <Folder Include="Features\User\ViewModel\" />
     <Folder Include="Infra\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
   </ItemGroup>
 
   <ItemGroup>
