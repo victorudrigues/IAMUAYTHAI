@@ -62,3 +62,17 @@ _ReSharper*/
 # Azure DevOps / Pipelines
 # ==========================================
 .azure-pipelines/
+
+# ==========================================
+# Build outputs
+# ==========================================
+bin/
+obj/
+ref/
+*.dll
+*.pdb
+*.cache
+*.json
+*.csproj.FileListAbsolute.txt
+*.csproj.CoreCompileInputs.cache
+*.csproj.BuildWithSkipAnalyzers

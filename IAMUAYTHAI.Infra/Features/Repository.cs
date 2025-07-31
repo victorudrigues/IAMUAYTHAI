@@ -1,11 +1,11 @@
 ﻿using IAMUAYTHAI.Application.Abstractions;
+using IAMUAYTHAI.Domain;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+
 
 namespace IAMUAYTHAI.Infra.Features
 {
-    public class Repository<T>(Context context, DbSet<T> dbSet) : IRepository<T> where T : class
+    public class Repository<T>(Context context, DbSet<T> dbSet) : IRepository<T> where T : Entity
     {
         protected readonly Context _context = context;
         protected readonly DbSet<T> _dbSet = dbSet;

@@ -1,4 +1,5 @@
 using IAMUAYTHAI.Domain.Aggregates.UserAggregate;
+using IAMUAYTHAI.Domain.Enumerations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
