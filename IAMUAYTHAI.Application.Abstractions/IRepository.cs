@@ -1,4 +1,4 @@
-﻿using IAMUAYTHAI.Domain;
+﻿using IAMUAYTHAI.Domain.Aggregates;
 
 namespace IAMUAYTHAI.Application.Abstractions
 {

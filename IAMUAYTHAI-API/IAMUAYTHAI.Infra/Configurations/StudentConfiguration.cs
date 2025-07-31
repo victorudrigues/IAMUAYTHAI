@@ -8,6 +8,7 @@ namespace IAMUAYTHAI.Infra.Configurations
     {
         public void Configure(EntityTypeBuilder<Student> builder)
         {
+            // Propriedades específicas do Student
             builder.Property(s => s.BirthDate)
                 .IsRequired()
                 .HasColumnType("datetime2");
@@ -15,14 +16,6 @@ namespace IAMUAYTHAI.Infra.Configurations
             // Índices para performance
             builder.HasIndex(s => s.BirthDate)
                 .HasDatabaseName("IX_Student_BirthDate");
-                
-            builder.HasIndex(s => s.Email)
-                .HasDatabaseName("IX_Student_Email");
-
-            builder.HasMany(s => s.StudentClasses)
-                .WithOne(sc => sc.Student)
-                .HasForeignKey(sc => sc.StudentId)
-                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

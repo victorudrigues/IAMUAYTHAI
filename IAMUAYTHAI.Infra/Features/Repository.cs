@@ -1,5 +1,5 @@
 ﻿using IAMUAYTHAI.Application.Abstractions;
-using IAMUAYTHAI.Domain;
+using IAMUAYTHAI.Domain.Aggregates;
 using Microsoft.EntityFrameworkCore;
 
 

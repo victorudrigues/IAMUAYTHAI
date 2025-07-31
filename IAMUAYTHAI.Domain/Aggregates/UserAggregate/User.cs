@@ -7,6 +7,6 @@ namespace IAMUAYTHAI.Domain.Aggregates.UserAggregate
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;
-        public UserProfile Profile { get; set; }
+        public UserProfileType Profile { get; set; }
     }
 }

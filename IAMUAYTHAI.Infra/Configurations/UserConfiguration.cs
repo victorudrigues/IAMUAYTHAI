@@ -1,6 +1,6 @@
-using IAMUAYTHAI.Domain.Aggregates.UserAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using IAMUAYTHAI.Domain.Aggregates.UserAggregate;
 
 namespace IAMUAYTHAI.Infra.Configurations
 {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace IAMUAYTHAI.Domain.Enumerations
 {
-    public enum UserProfile
+    public enum UserProfileType
     {
         Student = 1,
         Teacher = 2

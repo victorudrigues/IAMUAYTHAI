@@ -8,6 +8,5 @@ namespace IAMUAYTHAI.Application.Abstractions.Features.Class.Repository
 {
     public interface IClassRepository : IRepository<Domain.Aggregates.ClassAggregate.Class>
     {
-
     }
 }

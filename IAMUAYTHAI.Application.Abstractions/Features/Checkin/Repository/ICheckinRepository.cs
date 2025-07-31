@@ -8,6 +8,5 @@ namespace IAMUAYTHAI.Application.Abstractions.Features.Checkin.Repository
 {
     public interface ICheckinRepository : IRepository<Domain.Aggregates.CheckinAggregate.Checkin>
     {
-
     }
 }

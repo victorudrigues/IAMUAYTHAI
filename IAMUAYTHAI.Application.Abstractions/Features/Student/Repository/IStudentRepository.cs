@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace IAMUAYTHAI.Application.Abstractions.Features.Student.Repository
 {
-    internal interface IStudentRepository : IRepository<Domain.Aggregates.StudentAggregate.Student>
+    public interface IStudentRepository : IRepository<Domain.Aggregates.StudentAggregate.Student>
     {
     }
 }

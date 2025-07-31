@@ -1,0 +1,14 @@
+﻿################################################################################
+# Este arquivo .gitignore foi criado automaticamente pelo Microsoft(R) Visual Studio.
+################################################################################
+
+/IAMUAYTHAI.Infra/obj/Debug/net8.0
+/IAMUAYTHAI.Application.Abstractions/obj
+/IAMUAYTHAI.Domain/obj
+/IAMUAYTHAI.Infra/obj
+/IAMUAYTHAI.Application/obj/Debug/net8.0
+/IAMUAYTHAI.Application
+/IAMUAYTHAI.Application.Abstractions/bin/Debug/net8.0
+/IAMUAYTHAI.Application.Test
+/IAMUAYTHAI.Domain/bin/Debug/net8.0
+/IAMUAYTHAI.Infra/bin/Debug/net8.0

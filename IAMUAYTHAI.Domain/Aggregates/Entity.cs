@@ -1,4 +1,4 @@
-namespace IAMUAYTHAI.Domain
+namespace IAMUAYTHAI.Domain.Aggregates
 {
     public abstract class Entity
     {

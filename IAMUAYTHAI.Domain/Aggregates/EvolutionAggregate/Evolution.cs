@@ -1,3 +1,5 @@
+using System;
+
 namespace IAMUAYTHAI.Domain.Aggregates.EvolutionAggregate
 {
     public class Evolution : Entity

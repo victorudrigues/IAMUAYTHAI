@@ -1,5 +1,6 @@
 using IAMUAYTHAI.Domain.Aggregates.ScheduleAggregate;
 using IAMUAYTHAI.Domain.Aggregates.UserAggregate;
+using System.Collections.Generic;
 
 namespace IAMUAYTHAI.Domain.Aggregates.TeacherAggregate
 {

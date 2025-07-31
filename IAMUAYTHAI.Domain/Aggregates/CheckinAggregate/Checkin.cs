@@ -1,3 +1,5 @@
+using System;
+
 namespace IAMUAYTHAI.Domain.Aggregates.CheckinAggregate
 {
     public class Checkin : Entity
