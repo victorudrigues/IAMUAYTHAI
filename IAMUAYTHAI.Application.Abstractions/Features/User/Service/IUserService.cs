@@ -10,7 +10,7 @@ namespace IAMUAYTHAI.Application.Abstractions.Features.User.Service
 {
     public interface IUserService
     {
-        Task<UserDomain> RegisterAsync(UserResquest request);
+        Task RegisterAsync(UserResquest request);
         Task<UserDomain> GetByIdAsync(int id);
     }
 }

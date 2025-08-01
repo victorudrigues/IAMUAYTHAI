@@ -7,6 +7,7 @@ namespace IAMUAYTHAI_API.DependencyInjection
         public static IServiceCollection AddFeaturesServices(this IServiceCollection services)
         {
             services.AddUserInjections();
+            services.AddAuthInjections();
 
             return services;
         }

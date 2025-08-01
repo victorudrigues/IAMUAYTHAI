@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\IAMUAYTHAI.Application.Abstractions\IAMUAYTHAI.Application.Abstractions.csproj" />
+	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
   </ItemGroup>
 
 </Project>

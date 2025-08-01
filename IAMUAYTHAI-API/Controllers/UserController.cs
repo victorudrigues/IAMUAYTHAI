@@ -1,7 +1,5 @@
-using IAMUAYTHAI.Application.Abstractions.Features.User.Repository;
 using IAMUAYTHAI.Application.Abstractions.Features.User.Request;
 using IAMUAYTHAI.Application.Abstractions.Features.User.Service;
-using IAMUAYTHAI.Domain.Aggregates.UserAggregate;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IAMUAYTHAI_API.Controllers
@@ -15,26 +13,37 @@ namespace IAMUAYTHAI_API.Controllers
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] UserResquest user)
         {
-            var response = await _service.RegisterAsync(user);
-            return CreatedAtAction(nameof(GetById), new { id = response.Id}, response);
+            try
+            {
+                await _service.RegisterAsync(user);
+                return Ok(new { message = "Usuário criado com sucesso" });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Erro interno do servidor" });
+            }
         }
-
-        //[HttpGet]
-        //public async Task<IActionResult> GetAll()
-        //{
-        //    var users = await _userRepository.GetAllAsync();
-        //    return Ok(users);
-        //}
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var user = await _service.GetByIdAsync(id);
-
-            if (user == null)
-                return NotFound();
-
-            return Ok(user);
+            try
+            {
+                var user = await _service.GetByIdAsync(id);
+                return Ok(user);
+            }
+            catch (InvalidOperationException)
+            {
+                return NotFound(new { message = "Usuário não encontrado" });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Erro interno do servidor" });
+            }
         }
     }
 }
