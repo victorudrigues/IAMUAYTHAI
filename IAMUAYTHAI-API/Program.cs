@@ -44,6 +44,10 @@ else
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
+
+// Sempre após Authentication
+app.UseMiddleware<TokenBlacklistMiddleware>();
+
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

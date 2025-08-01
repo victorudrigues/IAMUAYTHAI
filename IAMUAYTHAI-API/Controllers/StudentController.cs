@@ -22,7 +22,7 @@ namespace IAMUAYTHAI_API.Controllers
                     return Forbid("Apenas estudantes podem fazer self check-in");
                 }
 
-                // Lógica para self checkin
+                // TODO: Lógica para self checkin
                 return Ok(new { message = "Check-in realizado com sucesso" });
             }
             catch (Exception)
@@ -73,7 +73,7 @@ namespace IAMUAYTHAI_API.Controllers
                 
                 if (userRole == "Student")
                 {
-                    // Lógica para buscar evolução do estudante logado
+                    // TODO: Lógica para buscar evolução do estudante logado
                     return Ok(new { message = "Minha evolução como estudante" });
                 }
                 else
@@ -104,7 +104,7 @@ namespace IAMUAYTHAI_API.Controllers
                 
                 if (userRole == "Student")
                 {
-                    // Lógica para buscar check-ins do estudante logado
+                    //TODO: Lógica para buscar check-ins do estudante logado
                     return Ok(new { message = "Meus check-ins como estudante" });
                 }
                 else

@@ -14,7 +14,7 @@ namespace IAMUAYTHAI_API.DependencyInjection
 
             if (!jwtOptions.IsValid())
             {
-                throw new InvalidOperationException("JWT configuration is invalid.");
+                throw new InvalidOperationException("A configuração JWT não é válida.");
             }
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

@@ -87,5 +87,26 @@ namespace IAMUAYTHAI.Infra.Auth.Services
             var userIdClaim = jwt.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
             return int.Parse(userIdClaim?.Value ?? "0");
         }
+
+        public string GetJtiFromToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwt = tokenHandler.ReadJwtToken(token);
+            var jtiClaim = jwt.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Jti);
+            return jtiClaim?.Value ?? string.Empty;
+        }
+
+        public DateTime GetExpirationFromToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwt = tokenHandler.ReadJwtToken(token);
+            return jwt.ValidTo;
+        }
     }
 }
+
+
+
+
+
+

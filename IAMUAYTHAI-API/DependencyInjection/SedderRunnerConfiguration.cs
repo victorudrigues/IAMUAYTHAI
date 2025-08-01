@@ -31,12 +31,12 @@ namespace IAMUAYTHAI_API.DependencyInjection
                     context.Users.Add(user);
                     await context.SaveChangesAsync();
 
-                    Console.WriteLine($"✅ Admin criado: {user.Email}");
+                    Console.WriteLine($"Admin criado: {user.Email}");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"⚠️ Erro ao aplicar seed: {ex.Message}");
+                Console.WriteLine($"Erro ao aplicar seed: {ex.Message}");
             }
         }
     }

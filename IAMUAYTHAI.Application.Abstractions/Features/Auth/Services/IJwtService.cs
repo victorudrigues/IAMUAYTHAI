@@ -8,5 +8,7 @@ namespace IAMUAYTHAI.Application.Abstractions.Features.Auth.Services
         string GenerateRefreshToken();
         bool ValidateToken(string token);
         int GetUserIdFromToken(string token);
+        string GetJtiFromToken(string token);
+        DateTime GetExpirationFromToken(string token);
     }
 }
