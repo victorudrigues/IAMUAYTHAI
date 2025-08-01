@@ -28,7 +28,6 @@
     <Folder Include="Features\User\Query\" />
     <Folder Include="Features\User\ViewModel\" />
     <Folder Include="Infra\" />
-    <Folder Include="Options\" />
   </ItemGroup>
 
   <ItemGroup>

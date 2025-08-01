@@ -19,8 +19,4 @@
     <ProjectReference Include="..\IAMUAYTHAI.Infra\IAMUAYTHAI.Infra.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Options\" />
-  </ItemGroup>
-
 </Project>

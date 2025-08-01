@@ -1,4 +1,4 @@
-using IAMUAYTHAI.Application.Abstractions.DTOs.Auth;
+using IAMUAYTHAI.Application.Abstractions.Features.Auth.Request;
 
 namespace IAMUAYTHAI.Application.Abstractions.Features.Auth
 {

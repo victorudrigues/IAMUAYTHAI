@@ -1,6 +1,7 @@
 using IAMUAYTHAI.Application.Abstractions.Features.Auth.Services;
+using IAMUAYTHAI.Application.Abstractions.Options;
 using IAMUAYTHAI.Domain.Aggregates.UserAggregate;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -11,25 +12,17 @@ namespace IAMUAYTHAI.Infra.Auth.Services
 {
     public class JwtService : IJwtService
     {
-        private readonly IConfiguration _configuration;
-        private readonly string _secretKey;
-        private readonly string _issuer;
-        private readonly string _audience;
-        private readonly int _expirationHours;
+        private readonly JwtOptions _options;
 
-        public JwtService(IConfiguration configuration)
+        public JwtService(IOptions<JwtOptions> options)
         {
-            _configuration = configuration;
-            _secretKey = _configuration["Jwt:SecretKey"] ?? throw new ArgumentNullException("Jwt:SecretKey not configured");
-            _issuer = _configuration["Jwt:Issuer"] ?? throw new ArgumentNullException("Jwt:Issuer not configured");
-            _audience = _configuration["Jwt:Audience"] ?? throw new ArgumentNullException("Jwt:Audience not configured");
-            _expirationHours = int.Parse(_configuration["Jwt:ExpirationHours"] ?? "24");
+            _options = options.Value ?? throw new ArgumentNullException(nameof(options));
         }
 
         public string GenerateToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_secretKey);
+            var key = Encoding.ASCII.GetBytes(_options.SecretKey);
 
             var claims = new[]
             {
@@ -43,9 +36,9 @@ namespace IAMUAYTHAI.Infra.Auth.Services
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddHours(_expirationHours),
-                Issuer = _issuer,
-                Audience = _audience,
+                Expires = DateTime.UtcNow.AddHours(_options.ExpirationHours),
+                Issuer = _options.Issuer,
+                Audience = _options.Audience,
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
@@ -66,18 +59,18 @@ namespace IAMUAYTHAI.Infra.Auth.Services
             try
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.ASCII.GetBytes(_secretKey);
+                var key = Encoding.ASCII.GetBytes(_options.SecretKey);
 
                 tokenHandler.ValidateToken(token, new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
                     ValidateIssuer = true,
-                    ValidIssuer = _issuer,
+                    ValidIssuer = _options.Issuer,
                     ValidateAudience = true,
-                    ValidAudience = _audience,
+                    ValidAudience = _options.Audience,
                     ClockSkew = TimeSpan.Zero
-                }, out SecurityToken validatedToken);
+                }, out SecurityToken _);
 
                 return true;
             }

@@ -1,11 +1,14 @@
+using IAMUAYTHAI.Application.Abstractions.Options;
 using IAMUAYTHAI.Infra;
 using IAMUAYTHAI_API.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 
 // Add services to the container.
 builder.Services.AddControllers();

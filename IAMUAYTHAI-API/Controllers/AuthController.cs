@@ -1,5 +1,5 @@
-using IAMUAYTHAI.Application.Abstractions.DTOs.Auth;
 using IAMUAYTHAI.Application.Abstractions.Features.Auth;
+using IAMUAYTHAI.Application.Abstractions.Features.Auth.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;

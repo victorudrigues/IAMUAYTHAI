@@ -1,5 +1,5 @@
-using IAMUAYTHAI.Application.Abstractions.DTOs.Auth;
 using IAMUAYTHAI.Application.Abstractions.Features.Auth;
+using IAMUAYTHAI.Application.Abstractions.Features.Auth.Request;
 using IAMUAYTHAI.Application.Abstractions.Features.Auth.Services;
 using IAMUAYTHAI.Application.Abstractions.Features.User.Repository;
 
