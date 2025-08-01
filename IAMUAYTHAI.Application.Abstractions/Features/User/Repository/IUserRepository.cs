@@ -13,5 +13,6 @@ namespace IAMUAYTHAI.Application.Abstractions.Features.User.Repository
         Task<bool> EmailExistsAsync(string email);
         Task<IEnumerable<Domain.Aggregates.UserAggregate.User>> GetByProfileAsync(UserProfileType profile);
         Task<Domain.Aggregates.UserAggregate.User?> GetWithDetailsAsync(int id);
+        Task<IEnumerable<Domain.Aggregates.UserAggregate.User>> GetByIdsAsync(List<string> ids);
     }
 }

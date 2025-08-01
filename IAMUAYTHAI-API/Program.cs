@@ -1,41 +1,26 @@
 using IAMUAYTHAI.Application.Abstractions.Options;
 using IAMUAYTHAI.Infra;
 using IAMUAYTHAI_API.DependencyInjection;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+// ============= USER SECRETS =============
+if (builder.Environment.IsDevelopment())
+    builder.Configuration.AddUserSecrets<Program>();
 
-// Add services to the container.
+// ============= OPTIONS =============
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
+
+// ============= SERVICES =============
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-// Registra o migrator no DI
+builder.Services.AddSwaggerDocumentation(builder.Environment);
 builder.Services.AddScoped<IContextMigrator, ContextMigrator>();
 builder.Services.AddFeaturesServices();
+builder.Services.AddJwtAuthentication(builder.Configuration);
 
-// Configuração JWT
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["Jwt:SecretKey"])),
-            ValidateIssuer = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidateAudience = true,
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            ClockSkew = TimeSpan.Zero
-        };
-    });
-
-// Adicionando o DbContext antes de builder.Build()
+// ============= DB =============
 builder.Services.AddDbContext<Context>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -45,25 +30,20 @@ builder.Services.AddDbContext<Context>(options =>
 
 var app = builder.Build();
 
-// Aplicando as migrations usando o ContextMigrator
-using (var scope = app.Services.CreateScope())
-{
-    var migrator = scope.ServiceProvider.GetRequiredService<IContextMigrator>();
-    migrator.MigrateAsync().GetAwaiter().GetResult();
-}
+// ============= MIGRATION + SEED =============
+await SedderRunnerConfiguration.ExecuteAsync(app.Services);
 
-// Configure the HTTP request pipeline.
+// ============= PIPELINE ============
 if (app.Environment.IsDevelopment())
+    app.UseSwaggerDocumentation();
+else
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseExceptionHandler("/Error");
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();

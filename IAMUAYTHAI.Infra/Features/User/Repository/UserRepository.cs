@@ -1,5 +1,4 @@
-﻿using IAMUAYTHAI.Application.Abstractions;
-using IAMUAYTHAI.Application.Abstractions.Features.User.Repository;
+﻿using IAMUAYTHAI.Application.Abstractions.Features.User.Repository;
 using Microsoft.EntityFrameworkCore;
 using IAMUAYTHAI.Domain.Enumerations;
 
@@ -25,6 +24,11 @@ namespace IAMUAYTHAI.Infra.Features.User.Repository
         public async Task<Domain.Aggregates.UserAggregate.User?> GetWithDetailsAsync(int id)
         {
             return await _dbSet.FirstOrDefaultAsync(u => u.Id == id);
+        }
+
+        public async Task<IEnumerable<Domain.Aggregates.UserAggregate.User>> GetByIdsAsync(List<string> ids)
+        {
+            return await _dbSet.Where(u => ids.Contains(u.Id.ToString())).ToListAsync();
         }
     }
 }   

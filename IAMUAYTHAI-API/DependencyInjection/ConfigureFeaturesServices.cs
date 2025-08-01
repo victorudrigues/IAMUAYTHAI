@@ -8,6 +8,9 @@ namespace IAMUAYTHAI_API.DependencyInjection
         {
             services.AddUserInjections();
             services.AddAuthInjections();
+            services.AddAdminInjections();
+            services.AddTeacherInjections();
+            services.AddStudentInjections();
 
             return services;
         }

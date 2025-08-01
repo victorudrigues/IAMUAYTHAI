@@ -11,7 +11,6 @@
     <Folder Include="Features\Checkin\Request\" />
     <Folder Include="Features\Checkin\ViewModel\" />
     <Folder Include="Features\Class\Query\" />
-    <Folder Include="Features\Class\Request\" />
     <Folder Include="Features\Class\ViewModel\" />
     <Folder Include="Features\Evolution\Query\" />
     <Folder Include="Features\Evolution\Request\" />
@@ -20,10 +19,8 @@
     <Folder Include="Features\Schedule\Request\" />
     <Folder Include="Features\Schedule\ViewModel\" />
     <Folder Include="Features\Student\Query\" />
-    <Folder Include="Features\Student\Request\" />
     <Folder Include="Features\Student\ViewModel\" />
     <Folder Include="Features\Teacher\Query\" />
-    <Folder Include="Features\Teacher\Request\" />
     <Folder Include="Features\Teacher\ViewModel\" />
     <Folder Include="Features\User\Query\" />
     <Folder Include="Features\User\ViewModel\" />
