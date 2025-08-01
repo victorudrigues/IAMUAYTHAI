@@ -38,7 +38,7 @@ namespace IAMUAYTHAI_API.DependencyInjection
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "IAMUAYTHAI API V1");
-                c.RoutePrefix = string.Empty;
+                c.RoutePrefix = "swagger";
             });
 
             return app;
