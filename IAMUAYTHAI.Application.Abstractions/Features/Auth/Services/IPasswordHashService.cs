@@ -2,7 +2,7 @@ namespace IAMUAYTHAI.Application.Abstractions.Features.Auth.Services
 {
     public interface IPasswordHashService
     {
-        string HashPassword(string password);
-        bool VerifyPassword(string password, string hash);
+        string HashPassword(ReadOnlySpan<char> password);
+        bool VerifyPassword(ReadOnlySpan<char> password, string hash);
     }
 }

@@ -1,4 +1,4 @@
-using IAMUAYTHAI.Application.Abstractions.Features.Auth.Services;
+Ôªøusing IAMUAYTHAI.Application.Abstractions.Features.Auth.Services;
 
 namespace IAMUAYTHAI_API.DependencyInjection
 {
@@ -21,23 +21,46 @@ namespace IAMUAYTHAI_API.DependencyInjection
             {
                 try
                 {
+                    if (!jwtService.ValidateToken(token))
+                    {
+                        _logger.LogWarning("Token inv√°lido detectado - Path: {Path}", context.Request.Path);
+                        context.Response.StatusCode = 401;
+                        await context.Response.WriteAsync("Token inv√°lido");
+                        return;
+                    }
+
                     var jti = jwtService.GetJtiFromToken(token);
                     
-                    if (!string.IsNullOrEmpty(jti) && await blacklistService.IsTokenBlacklistedAsync(jti))
+                    if (string.IsNullOrEmpty(jti))
                     {
-                        _logger.LogWarning("RequisiÁ„o bloqueada com token na lista negra. JTI: {TokenId}", jti);
+                        _logger.LogWarning("Token sem JTI detectado - Path: {Path} | Rejeitando por seguran√ßa", context.Request.Path);
+                        context.Response.StatusCode = 401;
+                        await context.Response.WriteAsync("Token sem identificador v√°lido");
+                        return;
+                    }
+                    
+                    var isBlacklisted = await blacklistService.IsTokenBlacklistedAsync(jti);
+                    if (isBlacklisted)
+                    {
+                        _logger.LogWarning("Token BLACKLISTED detectado - JTI: {TokenId} | Path: {Path}", jti, context.Request.Path);
                         context.Response.StatusCode = 401;
                         await context.Response.WriteAsync("Token foi revogado");
                         return;
                     }
+
+                    _logger.LogDebug("  Token v√°lido - JTI: {TokenId} | Path: {Path}", jti, context.Request.Path);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Erro crÌtico ao validar status do token na lista negra. Acesso negado por seguranÁa.");
+                    _logger.LogError(ex, "Erro cr√≠tico ao validar token - Path: {Path}", context.Request.Path);
                     context.Response.StatusCode = 503;
-                    await context.Response.WriteAsync("ServiÁo temporariamente indisponÌvel");
+                    await context.Response.WriteAsync("Servi√ßo temporariamente indispon√≠vel");
                     return;
                 }
+            }
+            else
+            {
+                _logger.LogDebug("Nenhum token fornecido - Path: {Path}", context.Request.Path);
             }
 
             await _next(context);

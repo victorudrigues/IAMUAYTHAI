@@ -1,5 +1,6 @@
 using IAMUAYTHAI.Application.Abstractions.Features.Auth.Services;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace IAMUAYTHAI.Infra.Auth.Services
 {
@@ -8,50 +9,77 @@ namespace IAMUAYTHAI.Infra.Auth.Services
         private const int SaltSize = 16;
         private const int HashSize = 32;
         private const int Iterations = 10000;
-
-        public string HashPassword(string password)
+        
+        public string HashPassword(ReadOnlySpan<char> password)
         {
-            // Gera um salt aleatório
-            byte[] salt = new byte[SaltSize];
-            using (var rng = RandomNumberGenerator.Create())
+            // Convertendo para UTF8 de forma segura
+            var maxByteCount = Encoding.UTF8.GetMaxByteCount(password.Length);
+            Span<byte> passwordBytes = maxByteCount <= 1024 
+                ? stackalloc byte[maxByteCount] 
+                : new byte[maxByteCount];
+
+            try
             {
-                rng.GetBytes(salt);
+                var actualByteCount = Encoding.UTF8.GetBytes(password, passwordBytes);
+                var actualPasswordBytes = passwordBytes[..actualByteCount];
+
+                // Gera salt aleatório
+                Span<byte> salt = stackalloc byte[SaltSize];
+                RandomNumberGenerator.Fill(salt);
+
+                // Gera hash usando PBKDF2
+                Span<byte> hash = stackalloc byte[HashSize];
+                Rfc2898DeriveBytes.Pbkdf2(actualPasswordBytes, salt, hash, Iterations, HashAlgorithmName.SHA256);
+
+                // Combina salt + hash
+                Span<byte> combined = stackalloc byte[SaltSize + HashSize];
+                salt.CopyTo(combined);
+                hash.CopyTo(combined[SaltSize..]);
+
+                return Convert.ToBase64String(combined);
             }
-
-            // Gera o hash
-            using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithmName.SHA256);
-            byte[] hash = pbkdf2.GetBytes(HashSize);
-
-            // Combina salt + hash
-            byte[] hashBytes = new byte[SaltSize + HashSize];
-            Array.Copy(salt, 0, hashBytes, 0, SaltSize);
-            Array.Copy(hash, 0, hashBytes, SaltSize, HashSize);
-
-            return Convert.ToBase64String(hashBytes);
+            finally
+            {
+                // Limpando dados sensíveis da memória
+                passwordBytes.Clear();
+            }
         }
 
-        public bool VerifyPassword(string password, string hash)
+        public bool VerifyPassword(ReadOnlySpan<char> password, string hash)
         {
             try
             {
-                byte[] hashBytes = Convert.FromBase64String(hash);
+                var hashBytes = Convert.FromBase64String(hash);
+                if (hashBytes.Length != SaltSize + HashSize)
+                    return false;
 
-                // Extrai o salt
-                byte[] salt = new byte[SaltSize];
-                Array.Copy(hashBytes, 0, salt, 0, SaltSize);
+                // Extraindo salt e hash armazenados
+                ReadOnlySpan<byte> salt = hashBytes.AsSpan(0, SaltSize);
+                ReadOnlySpan<byte> storedHash = hashBytes.AsSpan(SaltSize);
 
-                // Calcula o hash da senha fornecida
-                using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithmName.SHA256);
-                byte[] testHash = pbkdf2.GetBytes(HashSize);
+                // Convertendo senha para bytes de forma segura
+                var maxByteCount = Encoding.UTF8.GetMaxByteCount(password.Length);
+                Span<byte> passwordBytes = maxByteCount <= 1024 
+                    ? stackalloc byte[maxByteCount] 
+                    : new byte[maxByteCount];
 
-                // Compara os hashes
-                for (int i = 0; i < HashSize; i++)
+                try
                 {
-                    if (hashBytes[i + SaltSize] != testHash[i])
-                        return false;
-                }
+                    var actualByteCount = Encoding.UTF8.GetBytes(password, passwordBytes);
+                    var actualPasswordBytes = passwordBytes[..actualByteCount];
 
-                return true;
+                    // Calculando hash da senha
+                    Span<byte> computedHash = stackalloc byte[HashSize];
+                    Rfc2898DeriveBytes.Pbkdf2(actualPasswordBytes, salt, computedHash, Iterations, HashAlgorithmName.SHA256);
+
+                    // Comparação segura usando SequenceEqual
+                    return storedHash.SequenceEqual(computedHash);
+                }
+                finally
+                {
+                    // Limpa dados sensíveis
+                    passwordBytes.Clear();
+                }
             }
             catch
             {

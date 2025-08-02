@@ -2,7 +2,6 @@ using IAMUAYTHAI.Application.Abstractions.Features.Auth;
 using IAMUAYTHAI.Application.Abstractions.Features.Auth.Request;
 using IAMUAYTHAI.Application.Abstractions.Features.Auth.Services;
 using IAMUAYTHAI.Application.Abstractions.Features.User.Repository;
-using IAMUAYTHAI.Infra.Auth.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
@@ -19,8 +18,7 @@ namespace IAMUAYTHAI.Infra.Auth
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<AuthService> _logger;
 
-        // Hash gerado uma vez por execução da aplicação
-        private static readonly Lazy<string> _dummyHash = new(GenerateDummyHash);
+        private readonly Lazy<string> _dummyHash;
         
         // Timeout para operações de hash para evitar DoS
         private static readonly TimeSpan HashTimeout = TimeSpan.FromSeconds(5);
@@ -33,141 +31,169 @@ namespace IAMUAYTHAI.Infra.Auth
             IHttpContextAccessor httpContextAccessor,
             ILogger<AuthService> logger)
         {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _passwordHashService = passwordHashService ?? throw new ArgumentNullException(nameof(passwordHashService));
-            _jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
-            _tokenBlacklistService = tokenBlacklistService ?? throw new ArgumentNullException(nameof(tokenBlacklistService));
-            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _userRepository = userRepository;
+            _passwordHashService = passwordHashService;
+            _jwtService = jwtService;
+            _tokenBlacklistService = tokenBlacklistService;
+            _httpContextAccessor = httpContextAccessor;
+            _logger = logger;
+            
+            _dummyHash = new Lazy<string>(() => GenerateDummyHash());
         }
 
         public async Task<LoginResponse?> LoginAsync(LoginRequest request)
         {
-            if (request == null)
-            {
-                _logger.LogWarning("Tentativa de login com request nulo");
-                return null;
-            }
+            using var secureRequest = new SecureLoginRequest { Email = request.Email };
+            secureRequest.SetPassword(request.Password.AsSpan());
 
-            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
-            {
-                _logger.LogWarning("Tentativa de login com email ou senha vazios");
-                await SimulateConstantTimeAsync();
-                return null;
-            }
-
-            var normalizedEmail = NormalizeEmail(request.Email);
-            
-            try
-            {
-                var user = await _userRepository.GetByEmailAsync(normalizedEmail);
-                
-                // Execução em tempo constante para evitar timing attacks
-                var (isPasswordValid, isUserValid) = await VerifyCredentialsAsync(request.Password, user);
-                
-                if (!isPasswordValid || !isUserValid)
-                {
-                    // Log de tentativa falhada (sem exposição de dados sensíveis)
-                    var hashedEmail = HashForLogging(normalizedEmail);
-                    _logger.LogWarning("Tentativa de login falhada. Email hash: {EmailHash}, IP: {IpAddress}", 
-                        hashedEmail, GetClientIpAddress());
-                    return null;
-                }
-
-                // Verificações adicionais de segurança
-                if (!IsUserActiveAndValid(user!))
-                {
-                    _logger.LogWarning("Tentativa de login de usuário inativo ou inválido: {UserId}", user!.Id);
-                    return null;
-                }
-
-                return GenerateLoginResponse(user!);
-            }
-            catch (Exception ex)
-            {
-                var hashedEmail = HashForLogging(normalizedEmail);
-                _logger.LogError(ex, "Erro durante processo de login. Email hash: {EmailHash}", hashedEmail);
-                return null;
-            }
+            // Delega para o método seguro
+            return await SecureLoginAsync(secureRequest);
         }
 
         public async Task<bool> ChangePasswordAsync(int userId, ChangePasswordRequest request)
         {
-            if (request == null || userId <= 0)
-            {
-                _logger.LogWarning("Tentativa de alteração de senha com parâmetros inválidos");
-                return false;
-            }
+            using var secureRequest = new SecureChangePasswordRequest();
+            secureRequest.SetCurrentPassword(request.CurrentPassword.AsSpan());
+            secureRequest.SetNewPassword(request.NewPassword.AsSpan());
+            secureRequest.SetConfirmPassword(request.ConfirmPassword.AsSpan());
+            
+            return await SecureChangePasswordAsync(userId, secureRequest);
+        }
 
-            // Validação mais robusta de senha
-            if (string.IsNullOrWhiteSpace(request.NewPassword) || 
-                string.IsNullOrWhiteSpace(request.CurrentPassword) ||
-                string.IsNullOrWhiteSpace(request.ConfirmPassword))
-            {
-                _logger.LogWarning("Tentativa de alteração de senha com campos vazios para usuário: {UserId}", userId);
-                return false;
-            }
+        #region (Memory<char>)
 
-            if (request.NewPassword != request.ConfirmPassword)
+        /// <summary>
+        /// Método seguro para login usando LoginRequest com Memory<char>
+        /// </summary>
+        public async Task<LoginResponse?> SecureLoginAsync(SecureLoginRequest request)
+        {
+            using (request)
             {
-                _logger.LogWarning("Tentativa de alteração de senha - senhas não coincidem para usuário: {UserId}", userId);
-                return false;
-            }
-
-            // Validação de política de senha
-            if (!IsPasswordSecure(request.NewPassword))
-            {
-                _logger.LogWarning("Tentativa de alteração de senha - nova senha não atende aos critérios de segurança para usuário: {UserId}", userId);
-                return false;
-            }
-
-            try
-            {
-                var user = await _userRepository.GetByIdAsync(userId);
-                if (user == null)
+                if (request == null)
                 {
-                    _logger.LogWarning("Tentativa de alteração de senha para usuário inexistente: {UserId}", userId);
-                    return false;
+                    _logger.LogWarning("Tentativa de login com request nulo");
+                    return null;
                 }
 
-                // Verificação da senha atual com timeout
-                var isCurrentPasswordValid = await VerifyPasswordWithTimeoutAsync(request.CurrentPassword, user.PasswordHash);
-                if (!isCurrentPasswordValid)
+                if (string.IsNullOrWhiteSpace(request.Email) || request.GetPassword().IsEmpty)
                 {
-                    _logger.LogWarning("Tentativa de alteração de senha - senha atual incorreta para usuário: {UserId}", userId);
-                    return false;
+                    _logger.LogWarning("Tentativa de login com email ou senha vazios");
+                    await SimulateConstantTimeAsync();
+                    return null;
                 }
 
-                // Verificar se a nova senha não é igual à atual
-                var isSamePassword = await VerifyPasswordWithTimeoutAsync(request.NewPassword, user.PasswordHash);
-                if (isSamePassword)
+                var normalizedEmail = NormalizeEmail(request.Email);
+
+                try
                 {
-                    _logger.LogWarning("Tentativa de alteração de senha - nova senha igual à atual para usuário: {UserId}", userId);
-                    return false;
+                    var user = await _userRepository.GetByEmailAsync(normalizedEmail);
+
+                    // Usa método síncrono para verificação com ReadOnlySpan
+                    var (isPasswordValid, isUserValid) = VerifyCredentialsSecure(request.GetPassword(), user);
+
+                    if (!isPasswordValid || !isUserValid)
+                    {
+                        var hashedEmail = HashForLogging(normalizedEmail);
+                        _logger.LogWarning("Tentativa de login falhada. Email hash: {EmailHash}, IP: {IpAddress}",
+                            hashedEmail, GetClientIpAddress());
+                        return null;
+                    }
+
+                    if (!IsUserActiveAndValid(user!))
+                    {
+                        _logger.LogWarning("Tentativa de login de usuário inativo ou inválido: {UserId}", user!.Id);
+                        return null;
+                    }
+
+                    return GenerateLoginResponse(user!);
                 }
-
-                // Atualização da senha com hash seguro
-                user.PasswordHash = _passwordHashService.HashPassword(request.NewPassword);
-                _userRepository.Update(user);
-                await _userRepository.SaveChangesAsync();
-
-                _logger.LogInformation("Senha alterada com sucesso para usuário: {UserId}", userId);
-                
-                // Limpar dados sensíveis da memória
-                ClearSensitiveData(request);
-                
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao alterar senha para usuário: {UserId}", userId);
-                return false;
+                catch (Exception ex)
+                {
+                    var hashedEmail = HashForLogging(normalizedEmail);
+                    _logger.LogError(ex, "Erro durante processo de login. Email hash: {EmailHash}", hashedEmail);
+                    return null;
+                }
             }
         }
 
-        public async Task<LoginResponse?> RefreshTokenAsync(string refreshToken)
+        /// <summary>
+        /// Método seguro para mudança de senha usando ChangePasswordRequest com Memory<char>
+        /// </summary>
+        public async Task<bool> SecureChangePasswordAsync(int userId, SecureChangePasswordRequest request)
         {
-            if (string.IsNullOrWhiteSpace(refreshToken))
+            using (request)
+            {
+                if (request == null || userId <= 0)
+                {
+                    _logger.LogWarning("Tentativa de alteração de senha com parâmetros inválidos");
+                    return false;
+                }
+
+                if (request.GetCurrentPassword().IsEmpty ||
+                    request.GetNewPassword().IsEmpty ||
+                    request.GetConfirmPassword().IsEmpty)
+                {
+                    _logger.LogWarning("Tentativa de alteração de senha com campos vazios para usuário: {UserId}", userId);
+                    return false;
+                }
+
+                if (!request.PasswordsMatch())
+                {
+                    _logger.LogWarning("Tentativa de alteração de senha - senhas não coincidem para usuário: {UserId}", userId);
+                    return false;
+                }
+
+                if (!IsPasswordSecureSpan(request.GetNewPassword()))
+                {
+                    _logger.LogWarning("Tentativa de alteração de senha - nova senha não atende aos critérios de segurança para usuário: {UserId}", userId);
+                    return false;
+                }
+
+                try
+                {
+                    var user = await _userRepository.GetByIdAsync(userId);
+                    if (user == null)
+                    {
+                        _logger.LogWarning("Tentativa de alteração de senha para usuário inexistente: {UserId}", userId);
+                        return false;
+                    }
+
+                    var isCurrentPasswordValid = VerifyPasswordSecure(request.GetCurrentPassword(), user.PasswordHash);
+                    if (!isCurrentPasswordValid)
+                    {
+                        _logger.LogWarning("Tentativa de alteração de senha - senha atual incorreta para usuário: {UserId}", userId);
+                        return false;
+                    }
+
+                    var isSamePassword = VerifyPasswordSecure(request.GetNewPassword(), user.PasswordHash);
+                    if (isSamePassword)
+                    {
+                        _logger.LogWarning("Tentativa de alteração de senha - nova senha igual à atual para usuário: {UserId}", userId);
+                        return false;
+                    }
+
+                    user.PasswordHash = _passwordHashService.HashPassword(request.GetNewPassword());
+                    _userRepository.Update(user);
+                    await _userRepository.SaveChangesAsync();
+
+                    _logger.LogInformation("Senha alterada com sucesso para usuário: {UserId}", userId);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Erro ao alterar senha para usuário: {UserId}", userId);
+                    return false;
+                }
+            }
+        }
+
+        #endregion
+
+        #region Métodos Públicos Restantes
+
+        public async Task<LoginResponse?> RefreshTokenAsync(RefreshTokenRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.RefreshToken))
             {
                 _logger.LogWarning("Tentativa de refresh token com token vazio");
                 return null;
@@ -176,7 +202,6 @@ namespace IAMUAYTHAI.Infra.Auth
             try
             {
                 // TODO: Implementar lógica completa de refresh token
-                // Por enquanto, registra a tentativa
                 _logger.LogWarning("Tentativa de refresh token - funcionalidade não implementada completamente");
                 await Task.CompletedTask;
                 return null;
@@ -204,7 +229,6 @@ namespace IAMUAYTHAI.Infra.Auth
                 {
                     try
                     {
-                        // Validar token antes de adicionar à blacklist
                         if (!_jwtService.ValidateToken(token))
                         {
                             _logger.LogWarning("Tentativa de logout com token inválido para usuário: {UserId}", userId);
@@ -220,7 +244,6 @@ namespace IAMUAYTHAI.Infra.Auth
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Erro ao processar token durante logout do usuário: {UserId}", userId);
-                        // Não falha o logout mesmo se a blacklist falhar
                     }
                 }
                 else
@@ -233,6 +256,75 @@ namespace IAMUAYTHAI.Infra.Auth
                 _logger.LogError(ex, "Erro durante processo de logout para usuário: {UserId}", userId);
             }
         }
+
+        #endregion
+
+        #region Métodos Privados Seguros
+
+        private (bool isPasswordValid, bool isUserValid) VerifyCredentialsSecure(
+            ReadOnlySpan<char> password, 
+            Domain.Aggregates.UserAggregate.User? user)
+        {
+            var isPasswordValid = false;
+            var hashToVerify = user?.PasswordHash ?? _dummyHash.Value;
+
+            try
+            {
+                isPasswordValid = user != null && VerifyPasswordSecure(password, hashToVerify);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro durante verificação de credenciais");
+                if (user == null)
+                {
+                    _passwordHashService.VerifyPassword(password, _dummyHash.Value);
+                }
+            }
+
+            return (isPasswordValid, user != null);
+        }
+
+        private bool VerifyPasswordSecure(ReadOnlySpan<char> password, string hash)
+        {
+            try
+            {
+                return _passwordHashService.VerifyPassword(password, hash);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro durante verificação de senha");
+                return false;
+            }
+        }
+
+        private static bool IsPasswordSecureSpan(ReadOnlySpan<char> password)
+        {
+            const int MinLength = 8;
+            const int MaxLength = 128;
+
+            if (password.Length < MinLength || password.Length > MaxLength)
+                return false;
+
+            var hasUpper = false;
+            var hasLower = false;
+            var hasDigit = false;
+            var hasSpecial = false;
+
+            foreach (var c in password)
+            {
+                if (char.IsUpper(c)) hasUpper = true;
+                else if (char.IsLower(c)) hasLower = true;
+                else if (char.IsDigit(c)) hasDigit = true;
+                else if (!char.IsLetterOrDigit(c)) hasSpecial = true;
+            }
+
+            var criteriaCount = (hasUpper ? 1 : 0) + (hasLower ? 1 : 0) + (hasDigit ? 1 : 0) + (hasSpecial ? 1 : 0);
+            return criteriaCount >= 3;
+        }
+
+        #endregion
+
+        #region Métodos Privados (compatibilidade)
 
         private string? ExtractTokenFromCurrentRequest()
         {
@@ -260,73 +352,44 @@ namespace IAMUAYTHAI.Infra.Auth
             }
         }
 
-        private async Task<(bool isPasswordValid, bool isUserValid)> VerifyCredentialsAsync(string password, Domain.Aggregates.UserAggregate.User? user)
-        {
-            // Sempre executa verificação de hash para manter tempo constante
-            var isPasswordValid = false;
-            var hashToVerify = user?.PasswordHash ?? _dummyHash.Value;
-
-            try
-            {
-                isPasswordValid = user != null && await VerifyPasswordWithTimeoutAsync(password, hashToVerify);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro durante verificação de credenciais");
-                // Se há erro na verificação, simula o hash dummy para manter tempo constante
-                if (user == null)
-                {
-                    _passwordHashService.VerifyPassword(password, _dummyHash.Value);
-                }
-            }
-
-            return (isPasswordValid, user != null);
-        }
-
-        private async Task<bool> VerifyPasswordWithTimeoutAsync(string password, string hash)
-        {
-            var cancellationTokenSource = new CancellationTokenSource(HashTimeout);
-            
-            try
-            {
-                return await Task.Run(() => _passwordHashService.VerifyPassword(password, hash), cancellationTokenSource.Token);
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.LogWarning("Timeout durante verificação de senha");
-                return false;
-            }
-        }
-
         private async Task SimulateConstantTimeAsync()
         {
-            // Simula operação de hash para manter tempo constante
             await Task.Run(() => _passwordHashService.VerifyPassword("dummy", _dummyHash.Value));
+        }
+
+        private string GenerateDummyHash()
+        {
+            var uniqueData = $"dummy_password_{Environment.MachineName}_{Environment.ProcessId}_{DateTime.UtcNow:yyyyMMdd}";
+            return _passwordHashService.HashPassword(uniqueData.AsSpan());
+        }
+
+        private static bool IsValidEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email) || email.Length > 254)
+                return false;
+
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private static string NormalizeEmail(string email)
         {
-            return email.Trim().ToLowerInvariant();
-        }
+            if (string.IsNullOrWhiteSpace(email))
+                return string.Empty;
 
-        private static bool IsUserActiveAndValid(Domain.Aggregates.UserAggregate.User user)
-        {
-            // ^TODO: Adicionar validações específicas do domínio
-            return user.IsValid();
-        }
+            var normalized = email.Trim().ToLowerInvariant();
+            
+            if (!IsValidEmail(normalized))
+                throw new ArgumentException("Email inválido", nameof(email));
 
-        private static bool IsPasswordSecure(string password)
-        {
-            // Política de senha mais robusta
-            if (password.Length < 8)
-                return false;
-
-            var hasUpper = password.Any(char.IsUpper);
-            var hasLower = password.Any(char.IsLower);
-            var hasDigit = password.Any(char.IsDigit);
-            var hasSpecial = password.Any(c => !char.IsLetterOrDigit(c));
-
-            return hasUpper && hasLower && hasDigit && hasSpecial;
+            return normalized;
         }
 
         private LoginResponse GenerateLoginResponse(Domain.Aggregates.UserAggregate.User user)
@@ -358,7 +421,6 @@ namespace IAMUAYTHAI.Infra.Auth
                 var context = _httpContextAccessor.HttpContext;
                 if (context == null) return "Unknown";
 
-                // Verifica headers de proxy primeiro
                 var forwardedFor = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();
                 if (!string.IsNullOrEmpty(forwardedFor))
                 {
@@ -381,36 +443,16 @@ namespace IAMUAYTHAI.Infra.Auth
 
         private static string HashForLogging(string input)
         {
-            // Cria hash para logging sem exposer dados sensíveis
             var bytes = Encoding.UTF8.GetBytes(input);
             var hash = SHA256.HashData(bytes);
-            // Primeiros 8 caracteres do hash
             return Convert.ToBase64String(hash)[..8];
         }
 
-        private static void ClearSensitiveData(ChangePasswordRequest request)
+        private static bool IsUserActiveAndValid(Domain.Aggregates.UserAggregate.User user)
         {
-            // Limpa dados sensíveis da memória 
-            if (request.CurrentPassword != null)
-            {
-                request.CurrentPassword = new string('\0', request.CurrentPassword.Length);
-            }
-            if (request.NewPassword != null)
-            {
-                request.NewPassword = new string('\0', request.NewPassword.Length);
-            }
-            if (request.ConfirmPassword != null)
-            {
-                request.ConfirmPassword = new string('\0', request.ConfirmPassword.Length);
-            }
+            return user.IsValid();
         }
 
-        private static string GenerateDummyHash()
-        {
-            // Gera um hash dummy usando um valor conhecido e um salt único por execução
-            var salt = "unique_salt_for_current_execution";
-            var dummyPassword = "dummy_password" + salt;
-            return new PasswordHashService().HashPassword(dummyPassword);
-        }
+        #endregion
     }
 }

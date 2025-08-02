@@ -1,8 +1,8 @@
 using IAMUAYTHAI.Application.Abstractions.Features.Auth;
-using IAMUAYTHAI.Application.Abstractions.Features.Auth.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using IAMUAYTHAI.Application.Abstractions.Features.Auth.Request;
 
 namespace IAMUAYTHAI_API.Controllers
 {
@@ -24,6 +24,7 @@ namespace IAMUAYTHAI_API.Controllers
                 return BadRequest(ModelState);
 
             var result = await _authService.LoginAsync(request);
+            
             if (result == null)
                 return Unauthorized("Email ou senha inválidos");
 
@@ -38,12 +39,27 @@ namespace IAMUAYTHAI_API.Controllers
                 return BadRequest(ModelState);
 
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            
             var success = await _authService.ChangePasswordAsync(userId, request);
 
             if (!success)
                 return BadRequest("Não foi possível alterar a senha");
 
             return Ok("Senha alterada com sucesso");
+        }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _authService.RefreshTokenAsync(request);
+            
+            if (result == null)
+                return Unauthorized("Token inválido");
+
+            return Ok(result);
         }
 
         [HttpPost("logout")]
