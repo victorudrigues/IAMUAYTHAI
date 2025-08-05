@@ -44,7 +44,7 @@ namespace IAMUAYTHAI_API.DependencyInjection
                     {
                         _logger.LogWarning("Token BLACKLISTED detectado - JTI: {TokenId} | Path: {Path}", jti, context.Request.Path);
                         context.Response.StatusCode = 401;
-                        await context.Response.WriteAsync("Token foi revogado");
+                        await context.Response.WriteAsync("Token Inválido");
                         return;
                     }
 

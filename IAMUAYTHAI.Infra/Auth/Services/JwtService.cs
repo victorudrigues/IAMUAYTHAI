@@ -21,7 +21,6 @@ namespace IAMUAYTHAI.Infra.Auth.Services
             _options = options.Value ?? throw new ArgumentNullException(nameof(options));
             _logger = logger;
 
-            // Validação rigorosa das configurações
             if (!_options.IsValid())
             {
                 _logger.LogError("Configurações JWT inválidas detectadas");
@@ -36,7 +35,6 @@ namespace IAMUAYTHAI.Infra.Auth.Services
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var key = Encoding.UTF8.GetBytes(_options.SecretKey);
                 
-                // Usar DateTime.UtcNow diretamente para consistência
                 var now = DateTime.UtcNow;
                 var expiry = now.AddHours(_options.ExpirationHours);
 
@@ -90,7 +88,7 @@ namespace IAMUAYTHAI.Infra.Auth.Services
         {
             try
             {
-                var randomBytes = new byte[64]; // 512 bits para maior segurança
+                var randomBytes = new byte[64]; 
                 using var rng = RandomNumberGenerator.Create();
                 rng.GetBytes(randomBytes);
                 
