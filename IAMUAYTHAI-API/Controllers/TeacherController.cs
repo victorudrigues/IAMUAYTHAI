@@ -1,8 +1,18 @@
+using IAMUAYTHAI.Application.Abstractions.Features.Admin.ViewModel;
 using IAMUAYTHAI.Application.Abstractions.Features.Class.Request;
+using IAMUAYTHAI.Application.Abstractions.Features.Class.ViewModel;
+using IAMUAYTHAI.Application.Abstractions.Features.Checkin.ViewModel;
+using IAMUAYTHAI.Application.Abstractions.Features.Evolution.ViewModel;
+using IAMUAYTHAI.Application.Abstractions.Features.Student.ViewModel;
 using IAMUAYTHAI.Application.Abstractions.Features.Teacher.Service;
+using IAMUAYTHAI.Application.Abstractions.Features.User.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using ClassEntity = IAMUAYTHAI.Domain.Aggregates.ClassAggregate.Class;
+using CheckinEntity = IAMUAYTHAI.Domain.Aggregates.CheckinAggregate.Checkin;
+using StudentClassEntity = IAMUAYTHAI.Domain.Aggregates.StudentClassAggregate.StudentClass;
+using StudentDomain = IAMUAYTHAI.Domain.Aggregates.StudentAggregate.Student;
 
 namespace IAMUAYTHAI_API.Controllers
 {
@@ -30,22 +40,15 @@ namespace IAMUAYTHAI_API.Controllers
                     request.DateTime,
                     request.Description);
 
-                return Ok(new
-                {
-                    message = "Aula criada com sucesso",
-                    classId = createdClass.Id,
-                    teacherId,
-                    dateTime = createdClass.DateTime,
-                    description = createdClass.Description
-                });
+                return Ok(ToClassViewModel(createdClass));
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new ApiErrorViewModel { Message = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Erro interno do servidor", details = ex.Message });
+                return StatusCode(500, new ApiErrorViewModel { Message = "Erro interno do servidor", Details = ex.Message });
             }
         }
 
@@ -58,21 +61,21 @@ namespace IAMUAYTHAI_API.Controllers
 
                 await _teacherService.CheckinStudentAsync(teacherId, studentId);
 
-                return Ok(new
+                return Ok(new CheckinResultViewModel
                 {
-                    message = $"Check-in realizado com sucesso",
-                    studentId,
-                    teacherId,
-                    timestamp = DateTime.UtcNow
+                    Message = "Check-in realizado com sucesso",
+                    StudentId = studentId,
+                    TeacherId = teacherId,
+                    Timestamp = DateTime.UtcNow
                 });
             }
             catch (InvalidOperationException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new ApiErrorViewModel { Message = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Erro interno do servidor", details = ex.Message });
+                return StatusCode(500, new ApiErrorViewModel { Message = "Erro interno do servidor", Details = ex.Message });
             }
         }
 
@@ -85,26 +88,35 @@ namespace IAMUAYTHAI_API.Controllers
 
                 var students = await _teacherService.GetMyStudentsAsync(teacherId);
 
-                return Ok(new
-                {
-                    message = "Lista de estudantes do professor",
-                    teacherId,
-                    students = students.Select(s => new
-                    {
-                        id = s.Id,
-                        name = s.Name,
-                        email = s.Email,
-                        birthDate = s.BirthDate
-                    })
-                });
+                return Ok(students);
             }
             catch (InvalidOperationException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new ApiErrorViewModel { Message = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Erro interno do servidor", details = ex.Message });
+                return StatusCode(500, new ApiErrorViewModel { Message = "Erro interno do servidor", Details = ex.Message });
+            }
+        }
+
+        [HttpGet("my-students/{studentId}")]
+        public async Task<IActionResult> GetStudentById(int studentId)
+        {
+            try
+            {
+                var teacherId = GetCurrentUserId();
+
+                var student = await _teacherService.GetStudentByIdAsync(teacherId, studentId);
+
+                if (student == null)
+                    return NotFound(new ApiErrorViewModel { Message = "Estudante não encontrado ou não pertence a este professor." });
+
+                return Ok(student);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiErrorViewModel { Message = "Erro interno do servidor", Details = ex.Message });
             }
         }
 
@@ -117,21 +129,11 @@ namespace IAMUAYTHAI_API.Controllers
 
                 var classes = await _teacherService.GetMyClassesAsync(teacherId);
 
-                return Ok(new
-                {
-                    message = "Minhas aulas",
-                    teacherId,
-                    classes = classes.Select(c => new
-                    {
-                        id = c.Id,
-                        dateTime = c.DateTime,
-                        description = c.Description
-                    })
-                });
+                return Ok(classes);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Erro interno do servidor", details = ex.Message });
+                return StatusCode(500, new ApiErrorViewModel { Message = "Erro interno do servidor", Details = ex.Message });
             }
         }
 
@@ -144,21 +146,15 @@ namespace IAMUAYTHAI_API.Controllers
 
                 var teacher = await _teacherService.GetTeacherByIdAsync(teacherId);
 
-                return Ok(new
-                {
-                    id = teacher.Id,
-                    name = teacher.Name,
-                    email = teacher.Email,
-                    profile = teacher.Profile.ToString()
-                });
+                return Ok(teacher);
             }
             catch (InvalidOperationException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new ApiErrorViewModel { Message = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Erro interno do servidor", details = ex.Message });
+                return StatusCode(500, new ApiErrorViewModel { Message = "Erro interno do servidor", Details = ex.Message });
             }
         }
 

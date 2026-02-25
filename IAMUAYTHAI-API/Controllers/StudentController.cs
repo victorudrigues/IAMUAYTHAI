@@ -10,13 +10,13 @@ namespace IAMUAYTHAI_API.Controllers
     public class StudentController : ControllerBase
     {
         [HttpPost("checkin")]
-        public async Task<IActionResult> SelfCheckin()
+        public IActionResult SelfCheckin()
         {
             try
             {
                 var studentId = GetCurrentUserId();
                 var userRole = GetCurrentUserRole();
-                
+
                 if (userRole != "Student")
                 {
                     return Forbid("Apenas estudantes podem fazer self check-in");
@@ -32,13 +32,13 @@ namespace IAMUAYTHAI_API.Controllers
         }
 
         [HttpGet("my-classes")]
-        public async Task<IActionResult> GetMyClasses()
+        public IActionResult GetMyClasses()
         {
             try
             {
                 var studentId = GetCurrentUserId();
                 var userRole = GetCurrentUserRole();
-                
+
                 // Estudantes veem suas aulas, professores e admins podem ver de qualquer estudante
                 if (userRole == "Student")
                 {
@@ -53,7 +53,7 @@ namespace IAMUAYTHAI_API.Controllers
                     {
                         return BadRequest("studentId é obrigatório para professores e admins");
                     }
-                    
+
                     return Ok(new { message = $"Aulas do estudante {targetStudentId}" });
                 }
             }
@@ -64,13 +64,13 @@ namespace IAMUAYTHAI_API.Controllers
         }
 
         [HttpGet("my-evolution")]
-        public async Task<IActionResult> GetMyEvolution()
+        public IActionResult GetMyEvolution()
         {
             try
             {
                 var studentId = GetCurrentUserId();
                 var userRole = GetCurrentUserRole();
-                
+
                 if (userRole == "Student")
                 {
                     // TODO: Lógica para buscar evolução do estudante logado
@@ -84,7 +84,7 @@ namespace IAMUAYTHAI_API.Controllers
                     {
                         return BadRequest("studentId é obrigatório para professores e admins");
                     }
-                    
+
                     return Ok(new { message = $"Evolução do estudante {targetStudentId}" });
                 }
             }
@@ -95,13 +95,13 @@ namespace IAMUAYTHAI_API.Controllers
         }
 
         [HttpGet("my-checkins")]
-        public async Task<IActionResult> GetMyCheckins()
+        public IActionResult GetMyCheckins()
         {
             try
             {
                 var studentId = GetCurrentUserId();
                 var userRole = GetCurrentUserRole();
-                
+
                 if (userRole == "Student")
                 {
                     //TODO: Lógica para buscar check-ins do estudante logado
@@ -115,7 +115,7 @@ namespace IAMUAYTHAI_API.Controllers
                     {
                         return BadRequest("studentId é obrigatório para professores e admins");
                     }
-                    
+
                     return Ok(new { message = $"Check-ins do estudante {targetStudentId}" });
                 }
             }
