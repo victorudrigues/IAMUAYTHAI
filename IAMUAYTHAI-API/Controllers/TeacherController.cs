@@ -40,7 +40,7 @@ namespace IAMUAYTHAI_API.Controllers
                     request.DateTime,
                     request.Description);
 
-                return Ok(ToClassViewModel(createdClass));
+                return Ok(createdClass);
             }
             catch (ArgumentException ex)
             {

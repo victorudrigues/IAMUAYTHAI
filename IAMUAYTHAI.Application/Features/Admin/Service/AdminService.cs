@@ -9,7 +9,7 @@ using IAMUAYTHAI.Application.Abstractions.Features.Teacher.ViewModel;
 using IAMUAYTHAI.Application.Abstractions.Features.User.Repository;
 using IAMUAYTHAI.Application.Abstractions.Features.User.ViewModel;
 using StudentDomain = IAMUAYTHAI.Domain.Aggregates.StudentAggregate.Student;
-using IAMUAYTHAI.Domain.Aggregates.TeacherAggregate;
+using TeacherDomain = IAMUAYTHAI.Domain.Aggregates.TeacherAggregate.Teacher;
 using IAMUAYTHAI.Domain.Enumerations;
 
 namespace IAMUAYTHAI.Application.Features.Admin.Service
@@ -44,7 +44,7 @@ namespace IAMUAYTHAI.Application.Features.Admin.Service
 
             var passwordHash = _passwordHashService.HashPassword(request.Password.AsSpan());
 
-            var teacher = new Teacher
+            var teacher = new TeacherDomain
             {
                 Name = request.Name.Trim(),
                 Email = email,

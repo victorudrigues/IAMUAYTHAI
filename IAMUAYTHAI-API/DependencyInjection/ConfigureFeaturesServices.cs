@@ -1,4 +1,4 @@
-﻿using IAMUAYTHAI_API.DependencyInjection.Features;
+using IAMUAYTHAI_API.DependencyInjection.Features;
 
 namespace IAMUAYTHAI_API.DependencyInjection
 {
@@ -11,6 +11,8 @@ namespace IAMUAYTHAI_API.DependencyInjection
             services.AddAdminInjections();
             services.AddCheckinInjections();
             services.AddClassInjections();
+            services.AddEvolutionInjections();
+            services.AddStudentClassInjections();
             services.AddTeacherInjections();
             services.AddStudentInjections();
 

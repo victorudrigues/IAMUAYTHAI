@@ -8,5 +8,6 @@ namespace IAMUAYTHAI.Application.Abstractions.Features.Checkin.Repository
 {
     public interface ICheckinRepository : IRepository<Domain.Aggregates.CheckinAggregate.Checkin>
     {
+        Task<IEnumerable<Domain.Aggregates.CheckinAggregate.Checkin>> GetByStudentIdAsync(int studentId);
     }
 }
