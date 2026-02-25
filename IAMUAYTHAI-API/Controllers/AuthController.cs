@@ -1,6 +1,7 @@
 using IAMUAYTHAI.Application.Abstractions.Features.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 using IAMUAYTHAI.Application.Abstractions.Features.Auth.Request;
 
@@ -18,6 +19,8 @@ namespace IAMUAYTHAI_API.Controllers
         }
 
         [HttpPost("login")]
+        [AllowAnonymous]
+        [EnableRateLimiting("Login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             if (!ModelState.IsValid)
@@ -26,7 +29,7 @@ namespace IAMUAYTHAI_API.Controllers
             var result = await _authService.LoginAsync(request);
             
             if (result == null)
-                return Unauthorized("Email ou senha inv·lidos");
+                return Unauthorized("Email ou senha inv√°lidos");
 
             return Ok(result);
         }
@@ -43,12 +46,13 @@ namespace IAMUAYTHAI_API.Controllers
             var success = await _authService.ChangePasswordAsync(userId, request);
 
             if (!success)
-                return BadRequest("N„o foi possÌvel alterar a senha");
+                return BadRequest("N√£o foi poss√≠vel alterar a senha");
 
             return Ok("Senha alterada com sucesso");
         }
 
         [HttpPost("refresh-token")]
+        [AllowAnonymous]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
         {
             if (!ModelState.IsValid)
@@ -57,7 +61,7 @@ namespace IAMUAYTHAI_API.Controllers
             var result = await _authService.RefreshTokenAsync(request);
             
             if (result == null)
-                return Unauthorized("Token inv·lido");
+                return Unauthorized("Token inv√°lido");
 
             return Ok(result);
         }

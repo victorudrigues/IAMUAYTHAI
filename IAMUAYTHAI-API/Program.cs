@@ -1,3 +1,4 @@
+using System.Threading.RateLimiting;
 using IAMUAYTHAI.Application.Abstractions.Options;
 using IAMUAYTHAI.Infra;
 using IAMUAYTHAI_API.DependencyInjection;
@@ -11,6 +12,35 @@ if (builder.Environment.IsDevelopment())
 
 // ============= OPTIONS =============
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
+
+// ============= CORS =============
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+    ?? (builder.Environment.IsDevelopment() ? new[] { "*" } : Array.Empty<string>());
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DefaultCors", policy =>
+    {
+        if (allowedOrigins.Length == 1 && allowedOrigins[0] == "*")
+            policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+        else
+            policy.WithOrigins(allowedOrigins).AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+    });
+});
+
+// ============= RATE LIMITING (anti brute-force no login, por IP) =============
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("Login", context =>
+    {
+        var ip = context.Connection.RemoteIpAddress?.ToString() ?? "anon";
+        return RateLimitPartition.GetFixedWindowLimiter(ip, _ => new FixedWindowRateLimiterOptions
+        {
+            Window = TimeSpan.FromMinutes(1),
+            PermitLimit = 5
+        });
+    });
+});
 
 // ============= SERVICES =============
 builder.Services.AddControllers();
@@ -43,9 +73,11 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseCors("DefaultCors");
+app.UseRateLimiter();
 app.UseAuthentication();
 
-// Sempre após Authentication
+// Sempre apos Authentication
 app.UseMiddleware<TokenBlacklistMiddleware>();
 
 app.UseAuthorization();
